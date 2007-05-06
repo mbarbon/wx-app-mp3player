@@ -1,0 +1,13 @@
+Build.PL
+MANIFEST
+MANIFEST.SKIP
+META.yml
+Makefile.PL
+bin/mp3play.pl
+lib/Wx/App/Mp3Player.pm
+lib/Wx/App/Mp3Player/CurrentSong.pm
+lib/Wx/App/Mp3Player/Mpg123Player.pm
+lib/Wx/App/Mp3Player/Playlist/Data.pm
+lib/Wx/App/Mp3Player/Playlist/View.pm
+lib/Wx/App/Mp3Player/ProgressBar.pm
+t/001_load.t
