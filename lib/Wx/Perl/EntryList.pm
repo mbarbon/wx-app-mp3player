@@ -39,11 +39,11 @@ sub _delete_entries {
 sub delete_entry {
     my( $self, $index ) = @_;
 
+    $self->_delete_entries( $index, 1 );
     $self->notify_subscribers( 'delete_entries',
                                index => $index,
                                count => 1,
                                );
-    $self->_delete_entries( $index, 1 );
 }
 
 sub move_entry {

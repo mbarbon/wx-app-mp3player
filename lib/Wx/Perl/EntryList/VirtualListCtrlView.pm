@@ -61,7 +61,10 @@ sub _list_changed {
     my( $self, $list, $event, %args ) = @_;
 
     my( $from, $to );
-    if( $event eq 'add_entries' || $event eq 'delete_entries' ) {
+    if( $event eq 'delete_entries' ) {
+        $self->refresh;
+        return;
+    } elsif( $event eq 'add_entries' ) {
         ( $from, $to ) = ( $args{index}, $self->GetItemCount );
     } elsif( $event eq 'move_entries' ) {
         ( $from, $to ) = ( $args{from}, $args{to} );
