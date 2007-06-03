@@ -12,6 +12,12 @@ sub attach {
     $entrylist->add_subscriber( '*', $self, '_list_changed' );
 }
 
+sub detach {
+    my( $self ) = @_;
+
+    $entrylist->delete_subscriber( '*', $self );
+}
+
 sub _list_changed {
     my( $self, $list, $event, %args ) = @_;
 

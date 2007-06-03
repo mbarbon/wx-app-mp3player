@@ -14,9 +14,16 @@ sub new {
     my $self = $class->SUPER::new( $model, $parent, -1, [-1, -1], [-1, -1],
                                    $style );
     $self->list( $entrylist );
-    $entrylist->add_subscriber( '*', $self, '_list_changed' );
+    $entrylist->add_subscriber( '*', $self, '_list_changed' )
+      if $entrylist;
 
     return $self;
+}
+
+sub DESTROY {
+    my( $self ) = @_;
+
+    $self->list->delete_subscriber( '*', $self ) if $self->list;
 }
 
 sub support_dnd {
