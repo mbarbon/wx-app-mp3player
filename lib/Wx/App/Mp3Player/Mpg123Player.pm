@@ -1,13 +1,16 @@
 package Wx::App::Mp3Player::Mpg123Player;
 
 use strict;
-use base qw(Wx::EvtHandler Class::Accessor::Fast Class::Publisher);
+use base qw(Wx::EvtHandler Wx::Spice::Service::Base Class::Publisher);
 
 __PACKAGE__->mk_accessors( qw(player playlist iterator _timer) );
 
 use Audio::Play::MPG123;
+use Wx::Spice::Plugin qw(:plugin);
 use Wx::Event qw(EVT_TIMER);
 use Wx::Perl::EntryList::FwBwIterator;
+
+sub service_name { 'player' }
 
 sub new {
     my( $class, $playlist ) = @_;
@@ -37,7 +40,7 @@ sub _on_poll {
                                    elapsed_time => $frames->[2],
                                    );
     } else {
-        $self->next;
+        $self->next || $self->_timer->Stop;
     }
 }
 
@@ -104,6 +107,28 @@ sub go_to {
 
     return unless $self->player->tpf;
     $self->player->jump( $position / $self->player->tpf );
+}
+
+sub _my_cmd(&) {
+    my( $cmd ) = @_;
+
+    return sub {
+        $cmd->( $_[0]->get_service( 'player' ) );
+    };
+}
+
+sub _at_start { $_[0]->iterator->at_start }
+sub _at_end   { $_[0]->iterator->at_end }
+
+sub commands : Command {
+    return
+      ( player_stop     => { sub    => _my_cmd { $_[0]->stop },
+                             active => _my_cmd { $_[0]->playing } },
+        player_previous => { sub    => _my_cmd { $_[0]->previous },
+                             active => _my_cmd { $_[0]->playing && !$_[0]->_at_start } },
+        player_next     => { sub    => _my_cmd { $_[0]->next },
+                             active => _my_cmd { $_[0]->playing && !$_[0]->_at_end } },
+        );
 }
 
 1;

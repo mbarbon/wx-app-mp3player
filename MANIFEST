@@ -5,6 +5,7 @@ META.yml
 Makefile.PL
 bin/mp3play.pl
 lib/Wx/App/Mp3Player.pm
+lib/Wx/App/Mp3Player/Configuration.pm
 lib/Wx/App/Mp3Player/CurrentSong.pm
 lib/Wx/App/Mp3Player/Mpg123Player.pm
 lib/Wx/App/Mp3Player/Playlist/Data.pm

@@ -9,9 +9,12 @@ our $VERSION = '0.01';
 
 use Wx qw(:sizer);
 use Wx::Event qw(EVT_BUTTON EVT_CLOSE);
+use Wx::Spice::Plugin qw(:plugin);
 use Wx::Spice::ServiceManager;
 use Wx::Spice::ServiceManager::Holder;
 use Wx::Spice::Service::SizeKeeper;
+use Wx::Spice::Service::CommandManager;
+use Wx::Spice::UI::Events qw(EVT_SPICE_BUTTON EVT_SPICE_UPDATE_UI);
 use Wx::App::Mp3Player::Configuration;
 use Wx::App::Mp3Player::ProgressBar;
 use Wx::App::Mp3Player::CurrentSong;
@@ -26,7 +29,7 @@ sub new {
     my( $class ) = @_;
     my $self = $class->SUPER::new( undef, -1, 'MyPlayer' );
 
-    $self->service_manager( Wx::Spice::ServiceManager->new );
+    my $sm = $self->service_manager( Wx::Spice::ServiceManager->new );
     $self->service_manager->initialize;
     $self->service_manager->load_configuration;
 
@@ -39,15 +42,21 @@ sub new {
     $self->{current} = Wx::App::Mp3Player::CurrentSong
                             ->new( $self, $self->player );
 
+    $sm->add_service( $self->playlist_view );
+    $sm->add_service( $self->player );
+
     my $play = Wx::Button->new( $self, -1, "Play" );
     my $stop = Wx::Button->new( $self, -1, "Stop" );
     my $prev = Wx::Button->new( $self, -1, "<<" );
     my $next = Wx::Button->new( $self, -1, ">>" );
 
-    EVT_BUTTON( $self, $play, \&_on_play );
-    EVT_BUTTON( $self, $stop, sub { $self->player->stop } );
-    EVT_BUTTON( $self, $prev, sub { $self->player->previous } );
-    EVT_BUTTON( $self, $next, sub { $self->player->next } );
+    EVT_SPICE_BUTTON( $self, $play, $sm, 'play_song' );
+    EVT_SPICE_BUTTON( $self, $stop, $sm, 'player_stop' );
+    EVT_SPICE_BUTTON( $self, $prev, $sm, 'player_previous' );
+    EVT_SPICE_BUTTON( $self, $next, $sm, 'player_next' );
+    EVT_SPICE_UPDATE_UI( $self, $stop, $sm, 'player_stop' );
+    EVT_SPICE_UPDATE_UI( $self, $prev, $sm, 'player_previous' );
+    EVT_SPICE_UPDATE_UI( $self, $next, $sm, 'player_next' );
     EVT_CLOSE( $self, \&_on_close );
 
     my $sz = Wx::BoxSizer->new( wxVERTICAL );
@@ -67,12 +76,17 @@ sub new {
     return $self;
 }
 
-sub _on_play {
-    my( $self, $event ) = @_;
-    my $selection = $self->playlist_view->GetSelection;
-    $selection = 0 if $selection < 0;
+sub commands : Command {
+    return
+      ( play_song    => { sub => \&_on_play },
+        );
+}
 
-    $self->player->play( $selection );
+sub _on_play {
+    my( $self, $sm ) = @_;
+    my $selection = $sm->get_service( 'playlist_view' )->get_selected_file;
+
+    $sm->get_service( 'player' )->play( $selection );
 }
 
 sub _on_close {

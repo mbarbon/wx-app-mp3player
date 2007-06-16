@@ -1,12 +1,14 @@
 package Wx::App::Mp3Player::Playlist::View;
 
 use strict;
-use base qw(Wx::Perl::EntryList::VirtualListCtrlView);
+use base qw(Wx::Perl::EntryList::VirtualListCtrlView Wx::Spice::Service::Base);
 
 use Wx qw(:listctrl :window WXK_DELETE);
 use Wx::Event qw(EVT_SIZE EVT_LIST_KEY_DOWN);
 
 __PACKAGE__->mk_accessors( qw(model) );
+
+sub service_name { 'playlist_view' }
 
 sub new {
     my( $class, $parent, $model ) = @_;
@@ -48,6 +50,13 @@ sub add_files {
 
     return if $index < 0;
     $self->list->add_files_at( $index, $files );
+}
+
+sub get_selected_file {
+    my( $self ) = @_;
+    my $selection = $self->GetSelection;
+
+    return $selection >= 0 ? $selection : 0;
 }
 
 package Wx::App::Mp3Player::FileDropper;
