@@ -14,7 +14,8 @@ use Wx::Spice::ServiceManager;
 use Wx::Spice::ServiceManager::Holder;
 use Wx::Spice::Service::SizeKeeper;
 use Wx::Spice::Service::CommandManager;
-use Wx::Spice::UI::Events qw(EVT_SPICE_BUTTON EVT_SPICE_UPDATE_UI);
+use Wx::Spice::Service::MenuCommandManager;
+use Wx::Spice::UI::Events qw(EVT_SPICE_BUTTON EVT_SPICE_UPDATE_UI_ENABLE);
 use Wx::App::Mp3Player::Configuration;
 use Wx::App::Mp3Player::ProgressBar;
 use Wx::App::Mp3Player::CurrentSong;
@@ -45,6 +46,8 @@ sub new {
     $sm->add_service( $self->playlist_view );
     $sm->add_service( $self->player );
 
+    $self->SetMenuBar( $self->menu_command_manager_service->get_menu_bar( $self ) );
+
     my $play = Wx::Button->new( $self, -1, "Play" );
     my $stop = Wx::Button->new( $self, -1, "Stop" );
     my $prev = Wx::Button->new( $self, -1, "<<" );
@@ -54,9 +57,9 @@ sub new {
     EVT_SPICE_BUTTON( $self, $stop, $sm, 'player_stop' );
     EVT_SPICE_BUTTON( $self, $prev, $sm, 'player_previous' );
     EVT_SPICE_BUTTON( $self, $next, $sm, 'player_next' );
-    EVT_SPICE_UPDATE_UI( $self, $stop, $sm, 'player_stop' );
-    EVT_SPICE_UPDATE_UI( $self, $prev, $sm, 'player_previous' );
-    EVT_SPICE_UPDATE_UI( $self, $next, $sm, 'player_next' );
+    EVT_SPICE_UPDATE_UI_ENABLE( $self, $stop, $sm, 'player_stop' );
+    EVT_SPICE_UPDATE_UI_ENABLE( $self, $prev, $sm, 'player_previous' );
+    EVT_SPICE_UPDATE_UI_ENABLE( $self, $next, $sm, 'player_next' );
     EVT_CLOSE( $self, \&_on_close );
 
     my $sz = Wx::BoxSizer->new( wxVERTICAL );
@@ -74,6 +77,26 @@ sub new {
     $self->window_size_keeper_service->register_window( 'frame', $self );
 
     return $self;
+}
+
+sub menu_commands : MenuCommand {
+    return
+      ( file_menu    => { tag         => 'file',
+                          label       => 'File',
+                          priority    => 0,
+                          },
+        play_song    => { id          => 'play_song',
+                          menu        => 'file',
+                          label       => 'Play',
+                          priority    => 10,
+                          },
+        player_stop  => { id          => 'player_stop',
+                          menu        => 'file',
+                          update_menu => 'enable',
+                          label       => 'Stop',
+                          priority    => 20,
+                          },
+        );
 }
 
 sub commands : Command {
