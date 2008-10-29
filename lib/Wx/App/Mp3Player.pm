@@ -50,6 +50,7 @@ sub new {
 
     my $play = Wx::Button->new( $self, -1, "Play" );
     my $stop = Wx::Button->new( $self, -1, "Stop" );
+    my $pause = Wx::Button->new( $self, -1, "Pause" );
     my $prev = Wx::Button->new( $self, -1, "<<" );
     my $next = Wx::Button->new( $self, -1, ">>" );
 
@@ -57,15 +58,18 @@ sub new {
     EVT_SPICE_BUTTON( $self, $stop, $sm, 'player_stop' );
     EVT_SPICE_BUTTON( $self, $prev, $sm, 'player_previous' );
     EVT_SPICE_BUTTON( $self, $next, $sm, 'player_next' );
+    EVT_SPICE_BUTTON( $self, $pause, $sm, 'player_pause' );
     EVT_SPICE_UPDATE_UI_ENABLE( $self, $stop, $sm, 'player_stop' );
     EVT_SPICE_UPDATE_UI_ENABLE( $self, $prev, $sm, 'player_previous' );
     EVT_SPICE_UPDATE_UI_ENABLE( $self, $next, $sm, 'player_next' );
+    EVT_SPICE_UPDATE_UI_ENABLE( $self, $pause, $sm, 'player_pause' );
     EVT_CLOSE( $self, \&_on_close );
 
     my $sz = Wx::BoxSizer->new( wxVERTICAL );
     my $sz2 = Wx::BoxSizer->new( wxHORIZONTAL );
     $sz2->Add( $play, 0, wxALL, 3 );
     $sz2->Add( $stop, 0, wxALL, 3 );
+    $sz2->Add( $pause, 0, wxALL, 3 );
     $sz2->Add( $prev, 0, wxALL, 3 );
     $sz2->Add( $next, 0, wxALL, 3 );
     $sz->Add( $self->current, 0, wxGROW|wxALL, 3 );

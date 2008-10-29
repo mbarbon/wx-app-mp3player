@@ -96,10 +96,33 @@ sub stop {
     $self->player->stop;
 }
 
+sub pause {
+    my( $self ) = @_;
+
+    if( $self->paused ) {
+        $self->_timer->Start( 200 );
+    } else {
+        $self->_timer->Stop;
+    }
+    $self->player->pause;
+}
+
 sub playing {
     my( $self ) = @_;
 
     return $self->player->state == 2;
+}
+
+sub paused {
+    my( $self ) = @_;
+
+    return $self->player->state == 1;
+}
+
+sub stopped {
+    my( $self ) = @_;
+
+    return $self->player->state == 0;
 }
 
 sub go_to {
@@ -123,11 +146,13 @@ sub _at_end   { $_[0]->iterator->at_end }
 sub commands : Command {
     return
       ( player_stop     => { sub    => _my_cmd { $_[0]->stop },
-                             active => _my_cmd { $_[0]->playing } },
+                             active => _my_cmd { !$_[0]->stopped } },
+        player_pause    => { sub    => _my_cmd { $_[0]->pause },
+                             active => _my_cmd { !$_[0]->stopped } },
         player_previous => { sub    => _my_cmd { $_[0]->previous },
-                             active => _my_cmd { $_[0]->playing && !$_[0]->_at_start } },
+                             active => _my_cmd { !$_[0]->stopped && !$_[0]->_at_start } },
         player_next     => { sub    => _my_cmd { $_[0]->next },
-                             active => _my_cmd { $_[0]->playing && !$_[0]->_at_end } },
+                             active => _my_cmd { !$_[0]->stopped && !$_[0]->_at_end } },
         );
 }
 
